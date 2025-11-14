@@ -535,3 +535,31 @@ class GetReportHost(CollectorsBaseResource):
     action = "/databus_collectors/report_host/"
     method = "GET"
     platform_authorization = True
+
+
+class GetClusterGroups(StorageBaseResource):
+    name = gettext_lazy("获取存储集群列表")
+    action = "/databus_storage/cluster_groups/?bk_biz_id={bk_biz_id}"
+    method = "GET"
+    url_keys = ["bk_biz_id"]
+
+
+# Todo: 以下穿透无法进行，待日志平台补充ApiGw
+class GetDataLink(StorageBaseResource):
+    name = gettext_lazy("获取数据链路")
+    action = "/databus_storage/cluster_groups/?bk_biz_id={bk_biz_id}"
+    method = "GET"
+    url_keys = ["bk_biz_id"]
+
+
+class GetObjectAttribute(StorageBaseResource):
+    name = gettext_lazy("获取设备元数据")
+    action = "/databus_storage/cluster_groups/?bk_biz_id={bk_biz_id}"
+    method = "GET"
+    url_keys = ["bk_biz_id"]
+
+
+class GetIndexSetTag(StorageBaseResource):
+    name = gettext_lazy("获取标签列表")
+    action = "/databus_storage/cluster_groups/?bk_biz_id={bk_biz_id}"
+    method = "GET"

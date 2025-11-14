@@ -145,6 +145,7 @@ class CollectorConfig(SoftDeleteModel):
     tail_log_time = models.DateTimeField(gettext_lazy("最新数据时间"), null=True)
     storage_changed = models.BooleanField(gettext_lazy("更新集群"), default=False)
     auth_rt = models.BooleanField(gettext_lazy("已授权RT"), default=False)
+    extra_params = models.JSONField(gettext_lazy("其他拓展配置参数"), default=dict)
 
     class Meta:
         verbose_name = gettext_lazy("采集项")

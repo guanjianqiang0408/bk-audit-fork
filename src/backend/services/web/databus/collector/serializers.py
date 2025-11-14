@@ -40,6 +40,11 @@ from services.web.databus.constants import (
     LogReportStatus,
     SnapShotStorageChoices,
     TargetNodeTypeChoices,
+    CategoryIdChoices,
+    EnvironmentChoices,
+    CollectorScenarioIdChoices,
+    RecordLogTypeChoices,
+    SelectSdkTypeChoices
 )
 from services.web.databus.models import (
     CollectorConfig,
@@ -69,23 +74,51 @@ class TargetNodeSerializer(serializers.Serializer):
     bk_supplier_id = serializers.CharField(label=gettext_lazy("供应商id"), required=False)
 
 
+class ExtraParamSerialzier(serializers.Serializer):
+
+    # 过滤器开关
+    is_conditions = serializers.BooleanField(default=False)
+    # 新增属性： 过滤器组（主要用于回显使用）
+    condition_filter_groups = serializers.JSONField(label=gettext_lazy("拓展字段"))
+
+
 class CollectorCreateRequestSerializer(serializers.Serializer):
     namespace = serializers.CharField()
     system_id = serializers.CharField(label=gettext_lazy("系统ID"))
-    bk_biz_id = serializers.IntegerField(label=gettext_lazy("业务ID"))
     platform_username = serializers.CharField(label=gettext_lazy("数据平台用户"), required=False)
     bkdata_biz_id = serializers.IntegerField(label=gettext_lazy("数据平台业务ID"), required=False)
+
+    # 前置：记录日志参数
+    record_log_type = serializers.ChoiceField(label="日志接入方式", choices=RecordLogTypeChoices)
+    select_sdk_type = serializers.ChoiceField(label="选择SDK", choices=SelectSdkTypeChoices)
+
+    # 创建采集项通用参数
+    bk_biz_id = serializers.IntegerField(label=gettext_lazy("业务ID"))
     collector_config_name = serializers.RegexField(
         label=gettext_lazy("采集名称"), max_length=32, regex=COLLECTOR_CONFIG_NAME_REGEX
     )
     collector_config_name_en = serializers.RegexField(
         label=gettext_lazy("采集英文名称"), min_length=5, max_length=50, regex=COLLECTOR_CONFIG_NAME_EN_REGEX
     )
+    description = serializers.CharField(label=gettext_lazy("备注说明"), required=False)
+    category_id = serializers.ChoiceField(label=gettext_lazy("分类ID"), choices=CategoryIdChoices.choices)
+    environment = serializers.ChoiceField(label=gettext_lazy("环境"), choices=EnvironmentChoices.choices)
+    collector_scenario_id = serializers.ChoiceField(label=gettext_lazy("日志类型"),
+                                                    choices=CollectorScenarioIdChoices.choices)
+    # 拓展参数
+    extra_params = ExtraParamSerialzier()
+
+
+class PhysiclEnvironmentRequestSerializer(CollectorCreateRequestSerializer):
+
     target_object_type = serializers.CharField(label=gettext_lazy("目标类型"), default=DEFAULT_TARGET_OBJECT_TYPE)
     target_node_type = serializers.ChoiceField(label=gettext_lazy("节点类型"), choices=TargetNodeTypeChoices.choices)
     target_nodes = TargetNodeSerializer(label=gettext_lazy("目标节点"), many=True)
     data_encoding = serializers.CharField(label=gettext_lazy("日志字符集"))
+    data_link_id = serializers.CharField(label=gettext_lazy("数据链路ID"), required=False)
     params = PluginParamSerializer()
+    parent_index_set_ids = serializers.ListSerializer()
+
 
 
 class CollectorCreateResponseSerializer(serializers.ModelSerializer):

@@ -51,4 +51,8 @@ class StoragesViewSet(ResourceViewSet):
         ResourceRoute("POST", api.bk_log.node_attrs, endpoint="node_attrs"),
         ResourceRoute("PUT", resource.databus.storage.storage_activate, pk_field="cluster_id", endpoint="activate"),
         ResourceRoute("POST", resource.databus.storage.create_or_update_redis, endpoint="redis"),
+        ResourceRoute("GET", api.bk_log.get_cluster_groups, endpoint="get_cluster_groups"),
+        ResourceRoute("GET", api.bk_log.get_data_link, endpoint="get_data_link"),
+        ResourceRoute("GET", api.bk_log.get_object_attribute, endpoint="get_object_attribute"),
+        ResourceRoute("GET", api.bk_log.get_index_set_tag, endpoint="get_index_set_tag"),
     ]

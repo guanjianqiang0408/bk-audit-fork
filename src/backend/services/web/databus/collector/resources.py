@@ -221,6 +221,12 @@ class CreateCollectorResource(CollectorMeta):
     RequestSerializer = CollectorCreateRequestSerializer
     serializer_class = CollectorCreateResponseSerializer
 
+
+    @property
+    def request_serializer(self):
+        pass
+
+
     def get_collector_plugin_id(self, validated_request_data):
         try:
             return GlobalMetaConfig.get(
@@ -245,6 +251,7 @@ class CreateCollectorResource(CollectorMeta):
             collector_config_name_en=validated_request_data["collector_config_name_en"],
             bk_data_id=resp["bk_data_id"],
             description=validated_request_data["collector_config_name"],
+            extra_params=validated_request_data["extra_params"],
         )
 
     def perform_request(self, validated_request_data):
@@ -256,7 +263,9 @@ class CreateCollectorResource(CollectorMeta):
                 "platform_username": bk_resource_settings.PLATFORM_AUTH_ACCESS_USERNAME,
             }
         )
+        # 调用日志管理平台
         resp = api.bk_log.create_collector(validated_request_data)
+        # 审计中心数据自存
         collector_config = self.create_db_collector(collector_plugin_id, validated_request_data, resp)
         data = self.serializer_class(collector_config).data
         data.update({"task_id_list": resp.get("task_id_list", [])})

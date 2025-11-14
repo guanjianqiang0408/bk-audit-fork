@@ -156,6 +156,38 @@ class TargetNodeTypeChoices(TextChoices):
     INSTANCE = "INSTANCE", gettext_lazy("静态拓扑")
 
 
+class RecordLogTypeChoices(TextChoices):
+    SDK = "SDK", gettext_lazy("SDK接入")
+    LOG = "LOG", gettext_lazy("LOG接入")
+
+
+class SelectSdkTypeChoices(TextChoices):
+    PYTHON_SDK = "PYTHON_SDK", gettext_lazy("PYTHON SDK")
+    JAVA_SDK = "JAVA_SDK", gettext_lazy("JAVA SDK")
+    GO_SDK = "GO_SDK", gettext_lazy("GO SDK")
+
+
+class CategoryIdChoices(TextChoices):
+    HOST_PROCESS = "host_process", gettext_lazy("进程")
+    OS = "os", gettext_lazy("操作系统")
+    HOST_DEVICE = "host_device", gettext_lazy("主机设备")
+    KUBERNETES = "kubernetes", gettext_lazy("Kubernetes")
+    SERVICE_MODULE = "service_module", gettext_lazy("服务模块")
+    APPLICATION_CHECK = "application_check", gettext_lazy("业务应用")
+
+
+class EnvironmentChoices(TextChoices):
+    CONTAINER = "container", gettext_lazy("container")
+    LINUX = "linux", gettext_lazy("linux")
+    windows = "windows", gettext_lazy("windows")
+
+
+class CollectorScenarioIdChoices(TextChoices):
+    ROW = "row", gettext_lazy("行日志")
+    SECTION = "section", gettext_lazy("块日志")
+    WINEVENTLOG = "wineventlog", gettext_lazy("win event日志")
+
+
 LogReportStatus = _LogReportStatus
 
 
