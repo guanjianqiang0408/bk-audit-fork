@@ -28,7 +28,7 @@ from apps.meta.models import Field
 from apps.meta.utils.fields import STANDARD_FIELDS
 from core.exceptions import ValidationError
 from services.web.databus import models
-from services.web.databus.collector_plugin.serializers import PluginParamSerializer
+from services.web.databus.collector_plugin.serializers import PluginParamSerializer, ExtraLabelSerializer, ContainerLogConfigSerializer
 from services.web.databus.constants import (
     COLLECTOR_CONFIG_NAME_EN_REGEX,
     COLLECTOR_CONFIG_NAME_REGEX,
@@ -105,10 +105,18 @@ class CollectorCreateRequestSerializer(serializers.Serializer):
     environment = serializers.ChoiceField(label=gettext_lazy("环境"), choices=EnvironmentChoices.choices)
     collector_scenario_id = serializers.ChoiceField(label=gettext_lazy("日志类型"),
                                                     choices=CollectorScenarioIdChoices.choices)
+    parent_index_set_ids = serializers.ListField(
+        child=serializers.IntegerField(),
+        required=False,
+        default=[],
+        label=gettext_lazy("归属索引集ID列表")
+    )
+
     # 拓展参数
     extra_params = ExtraParamSerialzier()
 
 
+# 物理环境的序列化器
 class PhysiclEnvironmentRequestSerializer(CollectorCreateRequestSerializer):
 
     target_object_type = serializers.CharField(label=gettext_lazy("目标类型"), default=DEFAULT_TARGET_OBJECT_TYPE)
@@ -117,8 +125,68 @@ class PhysiclEnvironmentRequestSerializer(CollectorCreateRequestSerializer):
     data_encoding = serializers.CharField(label=gettext_lazy("日志字符集"))
     data_link_id = serializers.CharField(label=gettext_lazy("数据链路ID"), required=False)
     params = PluginParamSerializer()
-    parent_index_set_ids = serializers.ListSerializer()
 
+
+class ContainerEnvironmentRequestSerializer(CollectorCreateRequestSerializer):
+    bcs_cluster_id = serializers.CharField(
+        required=True,
+        max_length=255,
+        label=gettext_lazy("bcs集群id")
+    )
+
+    add_pod_label = serializers.BooleanField(
+        required=True,
+        label=gettext_lazy("是否自动添加pod中的labels")
+    )
+
+    add_pod_annotation = serializers.BooleanField(
+        required=False,
+        default=False,
+        label=gettext_lazy("是否自动添加pod中的annotations")
+    )
+
+    yaml_config_enabled = serializers.BooleanField(
+        required=False,
+        default=False,
+        label=gettext_lazy("是否使用yaml配置模式")
+    )
+
+    yaml_config = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        label=gettext_lazy("yaml配置内容")
+    )
+
+    config = serializers.ListField(
+        child=ContainerLogConfigSerializer(),
+        required=True,
+        label=gettext_lazy("容器日志配置")
+    )
+
+    extra_labels = serializers.ListField(
+        child=ExtraLabelSerializer(),  # 复用之前定义的label结构
+        required=False,
+        default=list,
+        label=gettext_lazy("额外标签")
+    )
+
+    collector_plugin_id = serializers.IntegerField(
+        required=False,
+        min_value=1,
+        label=gettext_lazy("采集插件ID")
+    )
+
+    data_link_id = serializers.CharField(
+        required=False,
+        max_length=255,
+        label=gettext_lazy("数据链路id")
+    )
+
+    platform_username = serializers.CharField(
+        required=False,
+        max_length=150,
+        label=gettext_lazy("平台用户")
+    )
 
 
 class CollectorCreateResponseSerializer(serializers.ModelSerializer):

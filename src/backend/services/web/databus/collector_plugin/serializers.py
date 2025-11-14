@@ -70,15 +70,310 @@ class PluginConditionSerializer(serializers.Serializer):
         return super().validate(attrs)
 
 
+class ExtraLabelSerializer(serializers.Serializer):
+    """
+        采集插件参数-额外标签序列化
+    """
+    key = serializers.CharField(
+        required=True,
+        max_length=255,
+        label=gettext_lazy("标签key")
+    )
+    operator = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        max_length=50,
+        label=gettext_lazy("标签连接符")
+    )
+    value = serializers.CharField(
+        required=True,
+        max_length=255,
+        label=gettext_lazy("标签value")
+    )
+
+
 class PluginParamSerializer(serializers.Serializer):
     """
-    插件参数序列化
+        采集插件参数序列化
     """
 
     paths = serializers.ListField(
         label=gettext_lazy("日志路径"), child=serializers.CharField(max_length=255), required=False
     )
+    exclude_files = serializers.ListField(
+        label=gettext_lazy("日志路径排除"), child=serializers.CharField(max_length=255), required=False
+    )
     conditions = PluginConditionSerializer(required=False)
+
+    # 多行日志配置
+    multiline_pattern = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        label=gettext_lazy("行首正则")
+    )
+    multiline_max_lines = serializers.CharField(
+        required=False,
+        label=gettext_lazy("最大匹配行数")
+    )
+    multiline_timeout = serializers.IntegerField(
+        required=False,
+        min_value=0,
+        label=gettext_lazy("最大耗时")
+    )
+
+    # 文件采集策略
+    tail_files = serializers.BooleanField(
+        required=False,
+        default=False,
+        label=gettext_lazy("是否增量采集")
+    )
+    ignore_older = serializers.IntegerField(
+        required=False,
+        min_value=0,
+        label=gettext_lazy("文件扫描忽略时间")
+    )
+    max_bytes = serializers.IntegerField(
+        required=False,
+        min_value=1,
+        label=gettext_lazy("单行日志最大长度")
+    )
+    scan_frequency = serializers.IntegerField(
+        required=False,
+        min_value=1,
+        label=gettext_lazy("文件扫描间隔")
+    )
+    close_inactive = serializers.IntegerField(
+        required=False,
+        min_value=0,
+        label=gettext_lazy("FD关联间隔")
+    )
+    harvester_limit = serializers.IntegerField(
+        required=False,
+        min_value=1,
+        label=gettext_lazy("同时采集数")
+    )
+    clean_inactive = serializers.IntegerField(
+        required=False,
+        min_value=0,
+        label=gettext_lazy("采集进度清理时间")
+    )
+
+    # 标签配置
+    extra_labels = serializers.ListField(
+        child=ExtraLabelSerializer(),
+        required=False,
+        default=list,
+        label=gettext_lazy("额外标签")
+    )
+
+    # Windows事件日志
+    winlog_name = serializers.ListField(
+        child=serializers.CharField(max_length=255),
+        required=False,
+        default=list,
+        label=gettext_lazy("windows事件名称")
+    )
+    winlog_level = serializers.ListField(
+        child=serializers.CharField(max_length=50),
+        required=False,
+        default=list,
+        label=gettext_lazy("windows事件等级")
+    )
+    winlog_event_id = serializers.ListField(
+        child=serializers.CharField(max_length=50),
+        required=False,
+        default=list,
+        label=gettext_lazy("windows事件ID")
+    )
+    winlog_source = serializers.ListField(
+        child=serializers.CharField(max_length=255),
+        required=False,
+        default=list,
+        label=gettext_lazy("windows事件来源")
+    )
+    winlog_content = serializers.ListField(
+        child=serializers.CharField(max_length=255),
+        required=False,
+        default=list,
+        label=gettext_lazy("windows事件内容")
+    )
+
+    # Redis配置
+    redis_hosts = serializers.ListField(
+        child=serializers.CharField(max_length=500),
+        required=False,
+        default=list,
+        label=gettext_lazy("redis目标")
+    )
+    redis_password = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        label=gettext_lazy("redis密码")
+    )
+    redis_password_file = serializers.CharField(
+        required=False,
+        label=gettext_lazy("redis密码文件")
+    )
+
+    # Kafka配置
+    kafka_hosts = serializers.ListField(
+        child=serializers.CharField(max_length=500),
+        required=False,
+        default=list,
+        label=gettext_lazy("kafka地址")
+    )
+    kafka_username = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        label=gettext_lazy("kafka用户名")
+    )
+    kafka_password = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        label=gettext_lazy("kafka密码")
+    )
+    kafka_ssl_params = serializers.DictField(
+        required=False,
+        default=dict,
+        label=gettext_lazy("kafka ssl配置")
+    )
+    kafka_topics = serializers.ListField(
+        child=serializers.CharField(max_length=255),
+        required=False,
+        default=list,
+        label=gettext_lazy("kafka topic")
+    )
+    kafka_group_id = serializers.CharField(
+        required=False,
+        allow_blank=True,
+        label=gettext_lazy("kafka 消费组")
+    )
+    kafka_initial_offset = serializers.ChoiceField(
+        choices=['oldest', 'newest'],
+        required=False,
+        default='newest',
+        label=gettext_lazy("初始偏移量")
+    )
+
+
+class ContainerSerializer(serializers.Serializer):
+    """
+        容器配置序列化
+    """
+    workload_type = serializers.CharField(
+        required=False,
+        max_length=255,
+        label=gettext_lazy("workload类型")
+    )
+
+    workload_name = serializers.CharField(
+        required=False,
+        max_length=255,
+        label=gettext_lazy("workload名称")
+    )
+
+    container_name = serializers.CharField(
+        required=False,
+        max_length=255,
+        label=gettext_lazy("容器名称")
+    )
+
+    container_name_exclude = serializers.CharField(
+        required=False,
+        max_length=255,
+        label=gettext_lazy("排除容器名称")
+    )
+
+
+class LabelSelectorSerializer(serializers.Serializer):
+    """
+        标签选择序列化
+    """
+    match_labels = serializers.ListField(
+        child=ExtraLabelSerializer(),  # 复用(key, operator, value)结构
+        required=False,
+        label=gettext_lazy("指定标签")
+    )
+
+    match_expressions = serializers.ListField(
+        child=ExtraLabelSerializer(),  # 复用(key, operator, value)结构
+        required=False,
+        label=gettext_lazy("指定表达式")
+    )
+
+
+class AnnotationSelectorSerializer(serializers.Serializer):
+    """
+        注解选择序列化
+    """
+    match_annotations = serializers.ListField(
+        child=ExtraLabelSerializer(),  # 复用(key, operator, value)结构
+        required=False,
+        label=gettext_lazy("指定注解")
+    )
+
+
+class ContainerLogConfigSerializer(serializers.Serializer):
+    """
+        采集插件参数-容器日志配置序列化
+    """
+    namespaces = serializers.ListField(
+        child=serializers.CharField(max_length=255),
+        required=False,
+        default=list,
+        label=gettext_lazy("命名空间")
+    )
+
+    namespaces_exclude = serializers.ListField(
+        child=serializers.CharField(max_length=255),
+        required=False,
+        default=list,
+        label=gettext_lazy("排除命名空间")
+    )
+
+    paths = serializers.ListField(
+        child=serializers.CharField(max_length=1024),
+        required=False,
+        default=list,
+        label=gettext_lazy("日志路径")
+    )
+
+    container = ContainerSerializer(
+        required=False,
+        label=gettext_lazy("指定容器")
+    )
+
+    label_selector = LabelSelectorSerializer(
+        required=False,
+        label=gettext_lazy("标签")
+    )
+
+    annotation_selector = AnnotationSelectorSerializer(
+        required=False,
+        label=gettext_lazy("注解")
+    )
+
+    # 引用之前定义的 LogCollectorSerializer
+    params = PluginParamSerializer(
+        required=True,
+        label=gettext_lazy("日志采集参数")
+    )
+
+    data_encoding = serializers.CharField(
+        required=False,
+        max_length=50,
+        label=gettext_lazy("日志字符集")
+    )
+
+    collector_type = serializers.ChoiceField(
+        choices=[
+            ('container_log_config', gettext_lazy('容器')),
+            ('node_log_config', gettext_lazy('节点')),
+            ('std_log_config', gettext_lazy('标准输出'))
+        ],
+        required=True,
+        label=gettext_lazy("容器采集类型")
+    )
 
 
 class PluginBaseSerializer(serializers.Serializer):

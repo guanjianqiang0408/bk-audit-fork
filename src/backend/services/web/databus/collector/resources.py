@@ -91,6 +91,8 @@ from services.web.databus.collector.serializers import (
     ToggleJoinDataResponseSerializer,
     UpdateBcsCollectorRequestSerializer,
     UpdateCollectorRequestSerializer,
+    ContainerEnvironmentRequestSerializer,
+    PhysiclEnvironmentRequestSerializer
 )
 from services.web.databus.collector.snapshot.join.base import (
     AssetHandler,
@@ -221,12 +223,6 @@ class CreateCollectorResource(CollectorMeta):
     RequestSerializer = CollectorCreateRequestSerializer
     serializer_class = CollectorCreateResponseSerializer
 
-
-    @property
-    def request_serializer(self):
-        pass
-
-
     def get_collector_plugin_id(self, validated_request_data):
         try:
             return GlobalMetaConfig.get(
@@ -255,6 +251,9 @@ class CreateCollectorResource(CollectorMeta):
         )
 
     def perform_request(self, validated_request_data):
+        environment = validated_request_data.get("environment")
+        # 根据用户选择的环境类型，使用不同的序列化器校验请求参数
+        validated_request_data = ContainerEnvironmentRequestSerializer(validated_request_data).data if environment == "container" else PhysiclEnvironmentRequestSerializer(validated_request_data).data
         collector_plugin_id = self.get_collector_plugin_id(validated_request_data)
         validated_request_data.update(
             {
